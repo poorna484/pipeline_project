@@ -1,8 +1,10 @@
-const http = require('http');
+from flask import Flask
 
-const server = http.createServer((req, res) => {
-res.write("Hello from NodeJS App");
-res.end();
-});
+app = Flask(__name__)
 
-server.listen(3000);
+@app.route('/')
+def home():
+    return "Hello from Flask App"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
