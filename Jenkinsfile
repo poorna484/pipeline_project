@@ -2,24 +2,36 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "tejasvi3697/nginx-app"
-        TAG = "latest"
+        IMAGE_NAME = "tejasvi3697/node-app"
+        CONTAINER_NAME = "node-container"
     }
 
     stages {
 
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/poorna484/pipeline_project.git'
+            }
+        }
+
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$TAG .'
+                sh 'docker build -t $IMAGE_NAME:latest .'
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                sh '''
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
+                '''
             }
         }
 
         stage('Docker Run') {
             steps {
-                sh '''
-                docker rm -f nginx-container || true
-                docker run -d -p 8085:80 --name nginx-container $IMAGE_NAME:$TAG
-                '''
+                sh 'docker run -d -p 3000:3000 --name $CONTAINER_NAME $IMAGE_NAME:latest'
             }
         }
 
@@ -27,17 +39,17 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub_credential',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
         stage('Docker Push') {
             steps {
-                sh 'docker push $IMAGE_NAME:$TAG'
+                sh 'docker push $IMAGE_NAME:latest'
             }
         }
 
