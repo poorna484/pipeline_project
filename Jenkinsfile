@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "tejasvi3697/fastapi-app"
-        CONTAINER_NAME = "fastapi-container"
+        IMAGE_NAME = "tejasvi3697/nginx-app"
+        CONTAINER_NAME = "nginx-container"
     }
 
     stages {
@@ -31,7 +31,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 8000:8000 --name $CONTAINER_NAME $IMAGE_NAME:latest'
+                sh 'docker run -d -p 8081:80 --name $CONTAINER_NAME $IMAGE_NAME:latest'
             }
         }
 
