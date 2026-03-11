@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "tejasvi3697/flask-app"
-        CONTAINER_NAME = "flask-container"
+        IMAGE_NAME = "tejasvi3697/fastapi-app"
+        CONTAINER_NAME = "fastapi-container"
     }
 
     stages {
@@ -31,7 +31,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME:latest'
+                sh 'docker run -d -p 8000:8000 --name $CONTAINER_NAME $IMAGE_NAME:latest'
             }
         }
 
