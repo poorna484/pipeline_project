@@ -2,10 +2,10 @@ FROM python:3.10
 
 WORKDIR /app
 
-COPY app.py .
+COPY main.py .
 
-RUN pip install flask
+RUN pip install fastapi uvicorn
 
-EXPOSE 5000
+EXPOSE 8000
 
-CMD ["python","app.py"]
+CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8000"]
