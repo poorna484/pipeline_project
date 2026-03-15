@@ -2,54 +2,51 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "tejasvi3697/nginx-app"
-        CONTAINER_NAME = "nginx-container"
+        DOCKER_IMAGE = "dockerhub-username/sample-fastapi"
+        TAG = "v1"
     }
 
     stages {
 
-        stage('Clone Repository') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/poorna484/pipeline_project.git'
+                git 'https://github.com/poorna484/pipeline_project.git'
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:latest .'
-            }
-        }
-
-        stage('Stop Old Container') {
-            steps {
-                sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                '''
-            }
-        }
-
-        stage('Run Container') {
-            steps {
-                sh 'docker run -d -p 8081:80 --name $CONTAINER_NAME $IMAGE_NAME:latest'
+                sh 'docker build -t $DOCKER_IMAGE:$TAG .'
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub_credential',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credential', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
                 }
             }
         }
 
-        stage('Docker Push') {
+        stage('Push Image to DockerHub') {
             steps {
-                sh 'docker push $IMAGE_NAME:latest'
+                sh 'docker push $DOCKER_IMAGE:$TAG'
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                docker network create myapp-network || true
+
+                docker rm -f fastapi-container || true
+
+                docker run -d \
+                --name fastapi-container \
+                --network myapp-network \
+                -p 8000:8000 \
+                $DOCKER_IMAGE:$TAG
+                '''
             }
         }
 
